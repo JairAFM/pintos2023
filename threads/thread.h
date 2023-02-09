@@ -93,7 +93,7 @@ struct thread
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
 
-    uint64_t timer_sleep               /* Entero que representa el tiempo que un thread debe permanecer dormido*/
+    uint64_t TIEMPO_DORMIDO;               /* Entero que representa el tiempo que un thread debe permanecer dormido*/
 
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
