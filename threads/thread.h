@@ -88,6 +88,7 @@ struct thread
     char name[16];                      /* Name (for debugging purposes). */
     uint8_t *stack;                     /* Saved stack pointer. */
     int priority;                       /* Priority. */
+    int pre_priority;                   /* Utilizado para guardar la prioridad anterior del thread */
     struct list_elem allelem;           /* List element for all threads list. */
 
     /* Shared between thread.c and synch.c. */
@@ -142,5 +143,6 @@ int thread_get_load_avg (void);
 
 void insertar_en_lista_espera(int64_t ticks); /*Toma el thread actual, lo bloquea y lo inserta en la lista de espera (lista_espera)*/
 void remover_thread_durmiente(int64_t ticks); /*Desbloquea el thread cuando haya cumplido su tiempo de expiracion*/
+static bool comparationPriority(struct list_elem *actual, struct list_elem *siguiente, void *aux); /*Ordena la lista maxima por prioridad*/
 
 #endif /* threads/thread.h */
