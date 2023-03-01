@@ -144,5 +144,6 @@ int thread_get_load_avg (void);
 void insertar_en_lista_espera(int64_t ticks); /*Toma el thread actual, lo bloquea y lo inserta en la lista de espera (lista_espera)*/
 void remover_thread_durmiente(int64_t ticks); /*Desbloquea el thread cuando haya cumplido su tiempo de expiracion*/
 static bool comparationPriority(struct list_elem *actual, struct list_elem *siguiente, void *aux); /*Ordena la lista maxima por prioridad*/
+void verifyActualPriority(); /*Verifica la prioridad actual*/
 
 #endif /* threads/thread.h */

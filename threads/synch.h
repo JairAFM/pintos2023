@@ -40,6 +40,7 @@ void cond_init (struct condition *);
 void cond_wait (struct condition *, struct lock *);
 void cond_signal (struct condition *, struct lock *);
 void cond_broadcast (struct condition *, struct lock *);
+static bool comparationPriority(struct list_elem *actual, struct list_elem *siguiente, void *aux); /*Ordena la lista maxima por prioridad*/
 
 /* Optimization barrier.
 

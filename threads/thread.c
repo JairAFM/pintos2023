@@ -251,7 +251,10 @@ thread_unblock (struct thread *t)
   /*Se inserta de forma ordenada por priority*/
   list_insert_ordered (&ready_list, &t->elem, comparationPriority, NULL);
   t->status = THREAD_READY;
-
+  /*Se verifica que no sea el idle_thread el que se desbloquea*/
+  if (thread_current() != idle_thread){
+      thread_yield();
+  }
   intr_set_level (old_level);
 }
 
@@ -351,7 +354,7 @@ void
 thread_set_priority (int new_priority)
 {
   thread_current ()->priority = new_priority;
-
+  verifyActualPriority();
 }
 
 /* Returns the current thread's priority. */

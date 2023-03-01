@@ -338,3 +338,15 @@ cond_broadcast (struct condition *cond, struct lock *lock)
   while (!list_empty (&cond->waiters))
     cond_signal (cond, lock);
 }
+
+static bool comparationPriority(struct list_elem *actual, struct list_elem *siguiente, void *aux) {
+  /*se validan los elementos de la lista enviados para que no sean nulos*/
+  ASSERT (actual != NULL);
+  ASSERT (siguiente != NULL);
+  /*Se obtiene el thread de los elementos enviados*/
+  struct thread *t_actual = list_entry (actual, struct thread, elem);
+  struct thread *t_siguiente = list_entry (siguiente, struct thread, elem);
+  /*Se valida el priority de los elementos enviados y si es mayor devolvera true para que ordene la lista*/
+  return t_actual->priority > t_siguiente->priority;
+}
+
