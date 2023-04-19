@@ -354,7 +354,8 @@ void
 thread_set_priority (int new_priority)
 {
   thread_current ()->priority = new_priority;
-  verifyActualPriority();
+  if(!list_empty(&ready_list))
+    verifyActualPriority();
 }
 
 /* Returns the current thread's priority. */
@@ -661,10 +662,13 @@ static bool comparationPriority(struct list_elem *actual, struct list_elem *sigu
   return t_actual->priority > t_siguiente->priority;
 }
 
-void verifyActualPriority() {
+void verifyActualPriority(void) {
   /*Se obtiene el siguiente thread a ejecutar de la lista ready*/
   struct thread* t_next = list_entry(list_begin(&ready_list), struct thread, elem);
   /*se verifica si el siguiente thread tiene una mayor prioridad que el thread actual, y de ser asi le cede el recurso*/
-  if ( t_next->priority > thread_get_priority())
-    thread_yield();
+  if(t_next != NULL) {
+    if (t_next->priority > thread_get_priority()) {
+      thread_yield();
+    }
+  }
 }
