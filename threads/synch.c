@@ -111,14 +111,25 @@ void
 sema_up (struct semaphore *sema)
 {
   enum intr_level old_level;
+  //se utilizara para verificar si es necesario ceder el procesador
+  struct thread *t_unblock = NULL;
 
   ASSERT (sema != NULL);
 
   old_level = intr_disable ();
-  if (!list_empty (&sema->waiters))
-    thread_unblock (list_entry (list_pop_front (&sema->waiters),
-                                struct thread, elem));
+  if (!list_empty (&sema->waiters)) 
+  {
+      t_unblock = list_entry (list_pop_front (&sema->waiters),
+                                struct thread, elem);
+      thread_unblock (t_unblock);
+  }
   sema->value++;
+  //se verifica si es necesario ceder el procesador si el thread desbloqueado tiene mayor prioridad
+  if(t_unblock != NULL){
+    if(t_unblock->priority > thread_current()->priority){
+      thread_yield();
+    }
+  }
   intr_set_level (old_level);
 }
 
@@ -180,6 +191,8 @@ lock_init (struct lock *lock)
   ASSERT (lock != NULL);
 
   lock->holder = NULL;
+  //Se inicializa con la prioridad minima
+  lock->priority = PRI_MIN;
   sema_init (&lock->semaphore, 1);
 }
 
@@ -198,8 +211,38 @@ lock_acquire (struct lock *lock)
   ASSERT (!intr_context ());
   ASSERT (!lock_held_by_current_thread (lock));
 
+  //se declaran las estructuras correspondientes para verificar donacion al solicitar lock
+  struct thread *t_lock = lock->holder;
+  struct thread *t_actual = thread_current();
+
+  threadActual->wait_thread = lock;
+
+  if(t_lock != NULL){
+    // Se dona en caso de que la prioridad es menor a la del thread actual
+    t_lock->priority = t_actual->priority;
+  }
+  
+  struct lock *lock_actual = lock;
+  while(t_lock != NULL && t_actual->priority > t_lock->priority){
+    // mientras que el thread que posee el lock tenga menor prioridad donar
+    t_lock->priority = t_actual->priority;
+
+    if(t_actual->priority > lock_actual->priority){
+      lock_actual->priority = t_actual->priority;
+    }
+
+    // Si el thread que posee el lock ya no espera a nadie puede salir del ciclo
+    lock_actual = threadLock->wait_thread;
+    if(lock_actual == NULL){
+      break;
+    } else {
+      // de lo contrario recibe el thread que tiene el lock
+      threadLock = lock_actual->holder;
+    }
+  }
   sema_down (&lock->semaphore);
   lock->holder = thread_current ();
+  
 }
 
 /* Tries to acquires LOCK and returns true if successful or false
@@ -235,6 +278,8 @@ lock_release (struct lock *lock)
 
   lock->holder = NULL;
   sema_up (&lock->semaphore);
+  struct thread *t_actual = thread_current();
+  t_actual->priority = t_actual->pre_priority;
 }
 
 /* Returns true if the current thread holds LOCK, false

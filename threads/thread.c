@@ -250,11 +250,7 @@ thread_unblock (struct thread *t)
   //list_push_back (&ready_list, &t->elem);
   /*Se inserta de forma ordenada por priority*/
   list_insert_ordered (&ready_list, &t->elem, comparationPriority, NULL);
-  t->status = THREAD_READY;
-  /*Se verifica que no sea el idle_thread el que se desbloquea*/
-  if (thread_current() != idle_thread){
-      thread_yield();
-  }
+  t->status = THREAD_READY; 
   intr_set_level (old_level);
 }
 
@@ -354,8 +350,14 @@ void
 thread_set_priority (int new_priority)
 {
   thread_current ()->priority = new_priority;
-  if(!list_empty(&ready_list))
+  
+  struct thread *t_actual = thread_current();
+  if(t_actual->priority == t_actual->pre_priority){
+    t_actual->pre_priority = new_priority;
+  }
+  if(!list_empty(&ready_list)) {
     verifyActualPriority();
+  }
 }
 
 /* Returns the current thread's priority. */
@@ -484,6 +486,8 @@ init_thread (struct thread *t, const char *name, int priority)
   t->priority = priority;
   t->pre_priority = priority;
   t->magic = THREAD_MAGIC;
+  t->wait_thread = null;
+  list_init(&t->hold_lock);
 
   old_level = intr_disable ();
   list_push_back (&all_list, &t->allelem);
@@ -664,7 +668,7 @@ static bool comparationPriority(struct list_elem *actual, struct list_elem *sigu
 
 void verifyActualPriority(void) {
   /*Se obtiene el siguiente thread a ejecutar de la lista ready*/
-  struct thread* t_next = list_entry(list_begin(&ready_list), struct thread, elem);
+  struct thread *t_next = list_entry(list_begin(&ready_list), struct thread, elem);
   /*se verifica si el siguiente thread tiene una mayor prioridad que el thread actual, y de ser asi le cede el recurso*/
   if(t_next != NULL) {
     if (t_next->priority > thread_get_priority()) {

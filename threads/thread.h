@@ -96,6 +96,9 @@ struct thread
 
     uint64_t TIEMPO_DORMIDO;               /* Entero que representa el tiempo que un thread debe permanecer dormido*/
 
+    struct lock *wait_thread;           // Lock que espera el thread
+    struct list hold_lock;              // bloqueos que posee el thread 
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
